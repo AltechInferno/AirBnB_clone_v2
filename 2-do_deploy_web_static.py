@@ -5,9 +5,8 @@ from fabric.api import *
 from os.path import exists
 from datetime import datetime
 
-env.hosts = ['web-01.example.com', 'web-02.example.com']
-env.user = 'your_username'
-env.key_filename = '/path/to/your/ssh/key.pem'
+env.hosts = ['127.0.0.1']
+env.user = 'ubuntu'
 
 def do_deploy(archive_path):
     """Distribute an archive to web servers."""
