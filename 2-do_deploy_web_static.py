@@ -1,42 +1,35 @@
 #!/usr/bin/python3
-"""Distributes an archive to web servers using Fabric."""
-
+"""the function do_deploy: """
 from fabric.api import *
-from os.path import exists
 from datetime import datetime
+from os.path import exists
 
+# my ips
 env.hosts = ['100.26.170.176', '100.24.72.207']
-env.user = 'ubuntu'
+
 
 def do_deploy(archive_path):
-    """Distribute an archive to web servers."""
-    if not exists(archive_path):
+    """archive to my web servers
+    """
+
+    if exists(archive_path) is False:
         return False
+
+    fn = archive_path.split('/')[-1]
+    
+    no_tgz_dir = '/data/web_static/releases/' + "{}".format(fn.split('.')[0])
+    tmp_dir = "/tmp/" + fn
 
     try:
-        # Upload the archive to the /tmp/ directory of the web servers
-        put(archive_path, '/tmp/')
-
-        # Construct paths and filenames
-        archive_filename = archive_path.split('/')[-1]
-        archive_name_no_extension = archive_filename.split('.')[0]
-        release_dir = f'/data/web_static/releases/{archive_name_no_extension}'
-
-        # Create the release directory and extract the archive
-        run(f'mkdir -p {release_dir}')
-        run(f'tar -xzf /tmp/{archive_filename} -C {release_dir}')
-        run(f'rm /tmp/{archive_filename}')
-
-        # Move files to the appropriate location
-        run(f'mv {release_dir}/web_static/* {release_dir}/')
-        run(f'rm -rf {release_dir}/web_static')
-
-        # Update the symbolic link
-        run(f'rm -rf /data/web_static/current')
-        run(f'ln -s {release_dir} /data/web_static/current')
-
+        put(archive_path, "/tmp/")
+        run("mkdir -p {}/".format(no_tgz_dir))
+        run("tar -xzf {} -C {}/".format(tmp_dir, no_tgz_dir))
+        run("rm {}".format(tmp_dir))
+        run("mv {}/web_static/* {}/".format(no_tgz_dir, no_tgz_dir))
+        run("rm -rf {}/web_static".format(no_tgz_dir))
+        run("rm -rf /data/web_static/current")
+        run("ln -s {}/ /data/web_static/current".format(no_tgz_dir))
+        
         return True
-    except Exception as e:
-        print(e)
+    except:
         return False
-
